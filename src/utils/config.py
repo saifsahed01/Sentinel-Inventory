@@ -24,8 +24,21 @@ class Config:
         if os.path.exists(env_file):
             load_dotenv(env_file)
         
-        # Database configuration
-        self.DATABASE_PATH = os.getenv("DATABASE_PATH", "data/inventory.db")
+        # Database configuration - use os.path for cross-platform compatibility
+        default_db_path = os.path.join("data", "inventory.db")
+        db_path_from_env = os.getenv("DATABASE_PATH", default_db_path)
+        
+        # Convert to absolute path relative to project root for Linux compatibility
+        if not os.path.isabs(db_path_from_env):
+            # Get the project root directory (3 levels up from this file)
+            current_file = os.path.abspath(__file__)
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+            self.DATABASE_PATH = os.path.join(project_root, db_path_from_env)
+        else:
+            self.DATABASE_PATH = db_path_from_env
+        
+        # Normalize path for the current OS
+        self.DATABASE_PATH = os.path.normpath(self.DATABASE_PATH)
         
         # Authentication configuration
         self.SESSION_TIMEOUT_MINUTES = int(os.getenv("SESSION_TIMEOUT_MINUTES", "30"))
@@ -57,14 +70,25 @@ class Config:
     
     def _ensure_directories(self):
         """Create required directories if they don't exist."""
-        # Create database directory
+        # Create database directory using os.path for cross-platform compatibility
         db_dir = os.path.dirname(self.DATABASE_PATH)
         if db_dir and not os.path.exists(db_dir):
-            os.makedirs(db_dir)
+            os.makedirs(db_dir, exist_ok=True)
         
-        # Create log directory
-        if not os.path.exists(self.LOG_DIRECTORY):
-            os.makedirs(self.LOG_DIRECTORY)
+        # Create log directory - convert to absolute path if relative
+        log_dir = self.LOG_DIRECTORY
+        if not os.path.isabs(log_dir):
+            # Get the project root directory (3 levels up from this file)
+            current_file = os.path.abspath(__file__)
+            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+            log_dir = os.path.join(project_root, log_dir)
+        
+        log_dir = os.path.normpath(log_dir)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        
+        # Update LOG_DIRECTORY to absolute path
+        self.LOG_DIRECTORY = log_dir
     
     def get_database_path(self) -> str:
         """Get the database file path."""

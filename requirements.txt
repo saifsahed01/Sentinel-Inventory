@@ -1,18 +1,18 @@
-# Core Dependencies for Inventory Management System - Phase 1
+# Production Dependencies for Sentinel-Inventory Management System
 
-# Password hashing and security
+# Web Framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Production WSGI Server
+gunicorn==21.2.0
+
+# Password Hashing and Security
 bcrypt==4.1.2
 
-# Environment variable management
+# Environment Variable Management
 python-dotenv==1.0.0
 
-# Configuration file support (YAML)
-pyyaml==6.0.1
-
-# Testing dependencies
-pytest==7.4.3
-pytest-cov==4.1.0
-
-# Web framework dependencies
-Flask>=3.0.0
-Werkzeug>=3.0.0
+# Development and Testing Dependencies (install with: pip install -r requirements.txt[dev])
+# pytest==7.4.3
+# pytest-cov==4.1.0
