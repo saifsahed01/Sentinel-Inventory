@@ -2,3 +2,4 @@
 2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Database initialized successfully
 2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Added category column to products table
 2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Application initialized successfully
+2026-05-16 00:38:23 - Inventory Management System - INFO - [logger.py:95] - Application shutdown complete

@@ -1,9 +1,11 @@
 """
 Database Manager Module
 Handles all database operations with secure parameterized queries.
+Thread-safe implementation using thread-local storage.
 """
 import sqlite3
 import os
+import threading
 from typing import Optional, List, Tuple, Any
 
 
@@ -11,29 +13,60 @@ class DatabaseManager:
     """
     Manages database connections and operations with security best practices.
     All queries use parameterized statements to prevent SQL injection.
+    Thread-safe: Each thread gets its own database connection.
     """
     
     def __init__(self, db_path: str = "inventory.db"):
         """
-        Initialize the DatabaseManager.
+        Initialize the DatabaseManager with thread-local storage.
         
         Args:
             db_path: Path to the SQLite database file
         """
         self.db_path = db_path
-        self.connection: Optional[sqlite3.Connection] = None
-        self.cursor: Optional[sqlite3.Cursor] = None
+        self._local = threading.local()
+    
+    @property
+    def connection(self) -> Optional[sqlite3.Connection]:
+        """
+        Get the thread-local database connection.
+        Creates a new connection if one doesn't exist for this thread.
+        
+        Returns:
+            Optional[sqlite3.Connection]: Thread-local connection or None
+        """
+        if not hasattr(self._local, 'connection') or self._local.connection is None:
+            self.connect()
+        return getattr(self._local, 'connection', None)
+    
+    @property
+    def cursor(self) -> Optional[sqlite3.Cursor]:
+        """
+        Get the thread-local database cursor.
+        Creates a new cursor if one doesn't exist for this thread.
+        
+        Returns:
+            Optional[sqlite3.Cursor]: Thread-local cursor or None
+        """
+        if not hasattr(self._local, 'cursor') or self._local.cursor is None:
+            self.connect()
+        return getattr(self._local, 'cursor', None)
     
     def connect(self) -> bool:
         """
-        Establish connection to the database.
+        Establish a thread-local connection to the database.
+        Each thread gets its own connection and cursor.
         
         Returns:
             bool: True if connection successful, False otherwise
         """
         try:
-            self.connection = sqlite3.connect(self.db_path)
-            self.cursor = self.connection.cursor()
+            # Create thread-local connection
+            self._local.connection = sqlite3.connect(
+                self.db_path,
+                check_same_thread=False  # Allow connection to be used across threads as fallback
+            )
+            self._local.cursor = self._local.connection.cursor()
             return True
         except sqlite3.Error as e:
             print(f"Database connection error: {e}")
@@ -163,15 +196,18 @@ class DatabaseManager:
     
     def close(self) -> None:
         """
-        Close the database connection safely.
+        Close the thread-local database connection safely.
         """
-        if self.cursor:
-            self.cursor.close()
-        if self.connection:
-            self.connection.commit()
-            self.connection.close()
-        self.cursor = None
-        self.connection = None
+        if hasattr(self._local, 'cursor') and self._local.cursor:
+            self._local.cursor.close()
+        if hasattr(self._local, 'connection') and self._local.connection:
+            self._local.connection.commit()
+            self._local.connection.close()
+        # Clear thread-local storage
+        if hasattr(self._local, 'cursor'):
+            self._local.cursor = None
+        if hasattr(self._local, 'connection'):
+            self._local.connection = None
     
     def __enter__(self):
         """Context manager entry."""
