@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm mt-5">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-box-seam text-primary" style="font-size: 3rem;"></i>
+                    <h3 class="mt-2">Inventory System</h3>
+                    <p class="text-muted">Please sign in to continue</p>
+                </div>
+                
+                <!-- Login Form -->
+                <form method="POST" action="{{ url_for('auth.login_post') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person"></i> Username
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="username" 
+                            name="username" 
+                            placeholder="Enter your username"
+                            required 
+                            autofocus
+                        >
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="password" 
+                            name="password" 
+                            placeholder="Enter your password"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> 
+                        Contact your administrator for account access
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Notice -->
+        <div class="alert alert-info mt-3" role="alert">
+            <i class="bi bi-shield-check"></i>
+            <strong>Security Notice:</strong> Your account will be locked after 5 failed login attempts.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 1rem;
+    }
+    
+    main.container {
+        padding-bottom: 2rem;
+    }
+</style>
+{% endblock %}
