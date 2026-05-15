@@ -413,7 +413,7 @@ This project is proprietary software developed for enterprise use.
 ## 📞 Support
 
 For issues, questions, or contributions:
-- 📧 Email: support@sentinel-inventory.com
+- 📧 Email: saif.sahed.2906@gmail.com
 - 🐛 Issues: GitHub Issues page
 - 📖 Documentation: See `/docs` directory
 
