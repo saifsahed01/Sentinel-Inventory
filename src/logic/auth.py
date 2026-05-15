@@ -159,9 +159,11 @@ class AuthenticationManager:
         Returns:
             Optional[Dict]: Session info if successful, None otherwise
         """
+        print(f"[AUTH] Login attempt for username: '{username}', password length: {len(password)}")
+        
         # Check if account is locked
         if self._is_account_locked(username):
-            print(f"Account locked for user: {username}")
+            print(f"[AUTH] Account locked for user: {username}")
             return None
         
         # Fetch user from database
@@ -169,16 +171,20 @@ class AuthenticationManager:
         user = self.db.fetch_one(query, (username,))
         
         if not user:
-            print(f"User not found: {username}")
+            print(f"[AUTH] User not found: {username}")
             return None
         
         db_username, password_hash, role = user
+        print(f"[AUTH] User found: {db_username}, hash: {password_hash[:30]}...")
         
         # Verify password
+        print(f"[AUTH] Verifying password...")
         if not self.verify_password(password, password_hash):
-            print(f"Invalid password for user: {username}")
+            print(f"[AUTH] Password verification FAILED for user: {username}")
             self._increment_failed_attempts(username)
             return None
+        
+        print(f"[AUTH] Password verification SUCCESS!")
         
         # Reset failed attempts on successful login
         self._reset_failed_attempts(username)

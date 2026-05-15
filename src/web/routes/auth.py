@@ -75,6 +75,14 @@ def login_post():
     username = request.form.get('username', '').strip()
     password = request.form.get('password', '')
     
+    # DEBUG: Log what we received
+    logger = current_app.config['LOGGER']
+    logger.info(f"Login attempt received", {
+        'username': username,
+        'password_length': len(password) if password else 0,
+        'username_length': len(username) if username else 0
+    })
+    
     # Validate input
     if not username or not password:
         flash('Please provide both username and password.', 'danger')
@@ -82,7 +90,6 @@ def login_post():
     
     # Attempt login using AuthenticationManager
     auth_manager = current_app.config['AUTH_MANAGER']
-    logger = current_app.config['LOGGER']
     
     try:
         result = auth_manager.login(username, password)

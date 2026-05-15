@@ -1,11 +1,40 @@
 # 🛡️ Sentinel-Inventory
 
-### Enterprise-Grade Inventory Management System
+### Enterprise-Grade Full-Stack Inventory Management System
 
 ![Tests Passed](https://img.shields.io/badge/Tests-58%2F58%20Passed-brightgreen?style=for-the-badge&logo=pytest)
 ![Security](https://img.shields.io/badge/Security-100%25%20Vulnerabilities%20Fixed-success?style=for-the-badge&logo=security)
 ![Coverage](https://img.shields.io/badge/Coverage-85%25%20Core%20Logic-blue?style=for-the-badge&logo=codecov)
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python)
+![Flask](https://img.shields.io/badge/Flask-Web%20UI-black?style=for-the-badge&logo=flask)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
+
+---
+
+## 🎯 Dual-Interface Access
+
+**Choose Your Preferred Way to Work:**
+
+### 🖥️ **Command-Line Interface (CLI)**
+Perfect for automation, scripting, and power users who prefer terminal-based workflows.
+
+**Benefits:**
+- ⚡ Lightning-fast operations
+- 🤖 Scriptable and automatable
+- 🔧 Ideal for DevOps and CI/CD pipelines
+- 💻 Low resource footprint
+
+### 🌐 **Web Dashboard**
+Modern, intuitive web interface for visual inventory management and real-time monitoring.
+
+**Benefits:**
+- 👁️ Visual inventory overview
+- 📊 Real-time analytics and charts
+- 🎨 User-friendly interface
+- 📱 Accessible from any browser
+
+![Web Dashboard](screenshots/dashboard.png)
+*Modern web interface with real-time inventory tracking and analytics*
 
 ---
 
@@ -106,12 +135,49 @@ cp .env.example .env
 # Set DB_PATH, LOG_LEVEL, SESSION_TIMEOUT, etc.
 ```
 
-4️⃣ **Run the Application**
+### Running the Application
+
+#### 🖥️ **Option 1: Command-Line Interface (CLI)**
+
+Launch the terminal-based interface for quick operations:
+
 ```bash
 python src/main.py
 ```
 
-5️⃣ **Run Tests**
+**Features:**
+- Interactive menu system
+- Fast product management
+- Bulk operations support
+- Perfect for automation scripts
+
+---
+
+#### 🌐 **Option 2: Web Dashboard**
+
+Launch the modern web interface with visual analytics:
+
+```bash
+python run_web.py
+```
+
+**Access the dashboard:**
+- 🌐 Open your browser to: `http://localhost:5000`
+- 🔐 Default credentials: `admin` / `admin123` (change immediately!)
+- 📊 View real-time inventory statistics
+- 🎨 Enjoy the intuitive visual interface
+
+**Web Features:**
+- Real-time inventory dashboard
+- Visual product management
+- Search and filter capabilities
+- Responsive design for all devices
+- Session-based authentication
+
+---
+
+### 🧪 Running Tests
+
 ```bash
 # Run all tests
 pytest tests/ -v
@@ -122,6 +188,8 @@ pytest tests/ --cov=src --cov-report=html
 # Run specific test file
 pytest tests/test_auth.py -v
 ```
+
+**Test Results:** ✅ 58/58 tests passing in 2.44 seconds
 
 ---
 
@@ -229,31 +297,41 @@ pytest tests/test_auth.py -v
 
 ## 🏗️ Architecture
 
-### **4-Layer MVC Design**
+### **Full-Stack 4-Layer MVC Design**
 
 ```
-┌─────────────────────────────────────────┐
-│         Presentation Layer (UI)         │
-│         src/ui/cli.py                   │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│         Business Logic Layer            │
-│    src/logic/auth.py                    │
-│    src/logic/inventory.py               │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│         Data Access Layer               │
-│         src/data/database.py            │
-└─────────────────────────────────────────┘
-                    ↓
-┌─────────────────────────────────────────┐
-│         Utilities & Config              │
-│    src/utils/validators.py              │
-│    src/utils/logger.py                  │
-│    src/utils/config.py                  │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│              Presentation Layer (Dual Interface)            │
+│                                                             │
+│  🖥️  CLI Interface          🌐  Web Interface              │
+│     src/ui/cli.py              src/web/app.py              │
+│                                src/web/routes/             │
+│                                src/web/templates/          │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Business Logic Layer                      │
+│                                                             │
+│              src/logic/auth.py                              │
+│              src/logic/inventory.py                         │
+│                                                             │
+│         (Shared by both CLI and Web interfaces)            │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Data Access Layer                         │
+│                                                             │
+│              src/data/database.py                           │
+│              (SQLite with parameterized queries)            │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Utilities & Config                        │
+│                                                             │
+│         src/utils/validators.py                             │
+│         src/utils/logger.py                                 │
+│         src/utils/config.py                                 │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 **Key Principles:**
@@ -261,11 +339,14 @@ pytest tests/test_auth.py -v
 - ✅ Single Responsibility Principle
 - ✅ Dependency Injection
 - ✅ Testability First
+- ✅ Interface Agnostic Business Logic
+- ✅ DRY (Don't Repeat Yourself)
 
 ---
 
 ## 💻 Technology Stack
 
+### **Backend & Core**
 | Category | Technology | Purpose |
 |----------|-----------|---------|
 | **Language** | Python 3.8+ | Core application development |
@@ -276,6 +357,15 @@ pytest tests/test_auth.py -v
 | **Logging** | Python logging | Application and error logging |
 | **Config** | python-dotenv | Environment variable management |
 | **Validation** | Custom validators | Input sanitization and validation |
+
+### **Web Interface**
+| Category | Technology | Purpose |
+|----------|-----------|---------|
+| **Framework** | Flask 2.3+ | Web application framework |
+| **Templates** | Jinja2 | Server-side HTML rendering |
+| **Frontend** | HTML5, CSS3, JavaScript | Modern responsive UI |
+| **Sessions** | Flask-Session | Secure session management |
+| **Forms** | WTForms | Form validation and rendering |
 
 ---
 
@@ -316,17 +406,28 @@ Our security implementation aligns with industry-leading standards:
 IBM BOB/
 ├── src/
 │   ├── __init__.py
-│   ├── main.py                 # Application entry point
+│   ├── main.py                 # CLI entry point
 │   ├── data/
 │   │   ├── __init__.py
 │   │   └── database.py         # Database operations
 │   ├── logic/
 │   │   ├── __init__.py
-│   │   ├── auth.py             # Authentication logic
-│   │   └── inventory.py        # Inventory management
+│   │   ├── auth.py             # Authentication logic (shared)
+│   │   └── inventory.py        # Inventory management (shared)
 │   ├── ui/
 │   │   ├── __init__.py
 │   │   └── cli.py              # Command-line interface
+│   ├── web/                    # 🌐 Web Interface
+│   │   ├── __init__.py
+│   │   ├── app.py              # Flask application
+│   │   ├── routes/
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py         # Web authentication routes
+│   │   │   └── inventory.py   # Web inventory routes
+│   │   └── templates/
+│   │       ├── base.html       # Base template
+│   │       ├── login.html      # Login page
+│   │       └── inventory.html  # Inventory dashboard
 │   └── utils/
 │       ├── __init__.py
 │       ├── config.py           # Configuration management
@@ -342,7 +443,10 @@ IBM BOB/
 ├── logs/
 │   ├── app_YYYYMMDD.log        # Application logs
 │   └── errors_YYYYMMDD.log     # Error logs
+├── screenshots/                # Web UI screenshots
+│   └── dashboard.png           # Dashboard screenshot
 ├── legacy_app/                 # Original vulnerable code (archived)
+├── run_web.py                  # 🌐 Web server launcher
 ├── .env.example                # Environment template
 ├── requirements.txt            # Python dependencies
 └── README.md                   # This file
