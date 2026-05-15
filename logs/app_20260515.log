@@ -1,0 +1,4 @@
+2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Application starting | Context: {'version': '2.0.0'}
+2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Database initialized successfully
+2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Added category column to products table
+2026-05-15 23:19:41 - Inventory Management System - INFO - [logger.py:95] - Application initialized successfully
