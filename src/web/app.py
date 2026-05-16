@@ -56,7 +56,7 @@ def create_app(config_path: str = ".env") -> Flask:
         # Initialize logger with error handling
         log_dir = config.get_log_directory()
         print(f"Initializing logger with directory: {log_dir}")
-        logger = AppLogger(config.get_log_directory())
+        logger = AppLogger(name="InventorySystem", log_dir=log_dir)
         
         inventory_manager = InventoryManager(db_manager, validator, logger, config)
         

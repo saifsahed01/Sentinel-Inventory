@@ -13,6 +13,7 @@
     }
   ],
   "env": {
+    "FLASK_SECRET_KEY": "vercel-production-secret-key-change-in-production",
     "DATABASE_PATH": "/tmp/inventory.db",
     "LOG_DIRECTORY": "/tmp/logs",
     "DEBUG_MODE": "False",
