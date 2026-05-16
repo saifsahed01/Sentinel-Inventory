@@ -1,6 +1,7 @@
 """
 Main Entry Point for Inventory Management System
 Initializes all components and starts the CLI interface.
+Also exposes Flask app instance for web deployment (e.g., Vercel).
 """
 import sys
 import os
@@ -16,6 +17,13 @@ from src.data.database import DatabaseManager
 from src.logic.auth import AuthenticationManager
 from src.logic.inventory import InventoryManager
 from src.ui.cli import CLIInterface
+
+# Import Flask app for web deployment (Vercel, etc.)
+from src.web.app import create_app
+
+# Create Flask app instance for web deployment
+# This is required by Vercel and other WSGI servers
+app = create_app()
 
 
 def initialize_application() -> tuple[Config, AppLogger, DatabaseManager, InputValidator, AuthenticationManager, InventoryManager, CLIInterface]:
