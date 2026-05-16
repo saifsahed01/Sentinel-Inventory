@@ -1,7 +1,7 @@
 """
 Vercel Serverless Function Entry Point
 This file serves as the entry point for Vercel's serverless deployment.
-Enhanced with comprehensive error logging and diagnostics.
+The AppLogger bug has been fixed, so the full application is now enabled.
 """
 import sys
 import os
@@ -9,7 +9,7 @@ import traceback
 
 # Print startup diagnostics
 print("=" * 80)
-print("VERCEL SERVERLESS FUNCTION STARTUP")
+print("VERCEL SERVERLESS FUNCTION STARTUP - FULL APP ENABLED")
 print("=" * 80)
 print(f"Python version: {sys.version}")
 print(f"Current working directory: {os.getcwd()}")
@@ -23,9 +23,9 @@ print("=" * 80)
 try:
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sys.path.insert(0, project_root)
-    print(f"✓ Added project root to Python path: {project_root}")
+    print(f"[OK] Added project root to Python path: {project_root}")
 except Exception as e:
-    print(f"✗ ERROR adding project root to path: {e}")
+    print(f"[ERROR] Failed to add project root to path: {e}")
     traceback.print_exc()
 
 # Initialize app variable
@@ -33,76 +33,46 @@ app = None
 
 try:
     print("\n" + "=" * 80)
-    print("STEP 1: Importing Flask")
+    print("STEP 1: Importing Flask and application modules")
     print("=" * 80)
-    from flask import Flask
-    print("✓ Flask imported successfully")
+    from flask import Flask, jsonify
+    from src.web.app import create_app
+    print("[OK] Flask and application modules imported successfully")
     
     print("\n" + "=" * 80)
-    print("STEP 2: Testing minimal Flask app")
+    print("STEP 2: Creating full Flask application")
     print("=" * 80)
     
-    # Create a minimal test app first
-    test_app = Flask(__name__)
+    # Create the full application (AppLogger bug is now fixed)
+    app = create_app()
+    print("[OK] Full Flask application created successfully")
     
-    @test_app.route('/')
-    def hello():
-        return {'status': 'ok', 'message': 'Minimal Flask app works!'}
-    
-    @test_app.route('/health')
+    # Add health endpoint for monitoring
+    @app.route('/health')
     def health():
-        return {
+        """Health check endpoint for monitoring."""
+        return jsonify({
             'status': 'healthy',
+            'app': 'IBM Inventory Management System',
             'python_version': sys.version,
             'cwd': os.getcwd(),
             'database_path': os.getenv('DATABASE_PATH', 'NOT SET'),
             'log_directory': os.getenv('LOG_DIRECTORY', 'NOT SET')
-        }
+        })
     
-    print("✓ Minimal Flask app created successfully")
+    print("[OK] Health endpoint registered")
     
+    # Log all registered routes for debugging
     print("\n" + "=" * 80)
-    print("STEP 3: Importing application modules")
+    print("REGISTERED ROUTES:")
     print("=" * 80)
-    
-    try:
-        print("  Importing src.web.app...")
-        from src.web.app import create_app
-        print("  ✓ src.web.app imported successfully")
-        
-        print("\n" + "=" * 80)
-        print("STEP 4: Creating full Flask application")
-        print("=" * 80)
-        
-        # Try to create the full app
-        app = create_app()
-        print("✓ Full Flask application created successfully")
-        
-    except Exception as e:
-        print(f"\n✗ ERROR creating full Flask app: {e}")
-        print("\nFull traceback:")
-        traceback.print_exc()
-        print("\n" + "=" * 80)
-        print("FALLBACK: Using minimal Flask app")
-        print("=" * 80)
-        
-        # Fall back to minimal app if full app fails
-        app = test_app
-        
-        # Add error endpoint
-        @app.route('/error-info')
-        def error_info():
-            return {
-                'status': 'error',
-                'message': 'Full app initialization failed',
-                'error': str(e),
-                'traceback': traceback.format_exc()
-            }
-        
-        print("✓ Fallback to minimal app successful")
+    for rule in app.url_map.iter_rules():
+        methods = ','.join(sorted(rule.methods - {'HEAD', 'OPTIONS'})) if rule.methods else ''
+        print(f"  {rule.endpoint:30s} {methods:20s} {rule.rule}")
+    print("=" * 80)
 
 except Exception as e:
-    print(f"\n✗ CRITICAL ERROR during initialization: {e}")
+    print(f"\n[ERROR] CRITICAL ERROR during initialization: {e}")
     print("\nFull traceback:")
     traceback.print_exc()
     
@@ -119,14 +89,23 @@ except Exception as e:
         def emergency():
             return jsonify({
                 'status': 'emergency_mode',
-                'message': 'Critical initialization error',
+                'message': 'Critical initialization error - Full app failed to load',
                 'error': str(e),
-                'traceback': traceback.format_exc()
+                'traceback': traceback.format_exc(),
+                'note': 'This should not happen as AppLogger bug is fixed'
             })
         
-        print("✓ Emergency app created")
+        @app.route('/health')
+        def emergency_health():
+            return jsonify({
+                'status': 'unhealthy',
+                'mode': 'emergency',
+                'error': str(e)
+            })
+        
+        print("[OK] Emergency app created")
     except Exception as emergency_error:
-        print(f"✗ FATAL: Cannot even create emergency app: {emergency_error}")
+        print(f"[FATAL] Cannot even create emergency app: {emergency_error}")
         traceback.print_exc()
         raise
 
