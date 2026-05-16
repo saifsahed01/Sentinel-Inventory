@@ -2007,3 +2007,7 @@ jinja2.exceptions.TemplateNotFound: error.html
 2026-05-16 05:06:22 - logs - INFO - [logger.py:95] - User logged in successfully | Context: {'username': 'admin'}
 2026-05-16 05:06:22 - logs - DEBUG - [logger.py:83] - Retrieved all products | Context: {'count': 1}
 2026-05-16 05:06:22 - logs - DEBUG - [logger.py:83] - Inventory page accessed | Context: {'username': 'admin', 'product_count': 1}
+2026-05-16 21:32:58 - InventorySystem - INFO - [logger.py:104] - Login attempt received | Context: {'username': 'admin', 'password_length': 8, 'username_length': 5}
+2026-05-16 21:32:58 - InventorySystem - INFO - [logger.py:104] - User logged in successfully | Context: {'username': 'admin'}
+2026-05-16 21:32:58 - InventorySystem - DEBUG - [logger.py:92] - Retrieved all products | Context: {'count': 1}
+2026-05-16 21:32:58 - InventorySystem - DEBUG - [logger.py:92] - Inventory page accessed | Context: {'username': 'admin', 'product_count': 1}

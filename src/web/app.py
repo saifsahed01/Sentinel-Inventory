@@ -23,7 +23,9 @@ def create_app(config_path: str = ".env") -> Flask:
     Returns:
         Flask: Configured Flask application instance
     """
-    app = Flask(__name__)
+    # Explicitly set template folder to handle package imports correctly
+    template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+    app = Flask(__name__, template_folder=template_dir)
     
     try:
         # Load configuration
