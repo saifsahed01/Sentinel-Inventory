@@ -27,8 +27,14 @@ class AppLogger:
         self.logger.setLevel(logging.DEBUG)
         
         # Create logs directory if it doesn't exist
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+        # Handle serverless environments where filesystem may be read-only
+        try:
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            # In serverless, fall back to console-only logging
+            print(f"Warning: Could not create log directory, using console-only logging: {e}")
+            self.log_dir = None
         
         # Prevent duplicate handlers
         if not self.logger.handlers:
@@ -48,26 +54,29 @@ class AppLogger:
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         
-        # File handler for all logs
-        log_file = os.path.join(self.log_dir, f"app_{datetime.now().strftime('%Y%m%d')}.log")
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(detailed_formatter)
+        # Only add file handlers if log directory is available (not in serverless)
+        if self.log_dir:
+            try:
+                # File handler for all logs
+                log_file = os.path.join(self.log_dir, f"app_{datetime.now().strftime('%Y%m%d')}.log")
+                file_handler = logging.FileHandler(log_file, encoding='utf-8')
+                file_handler.setLevel(logging.DEBUG)
+                file_handler.setFormatter(detailed_formatter)
+                self.logger.addHandler(file_handler)
+                
+                # File handler for errors only
+                error_log_file = os.path.join(self.log_dir, f"errors_{datetime.now().strftime('%Y%m%d')}.log")
+                error_file_handler = logging.FileHandler(error_log_file, encoding='utf-8')
+                error_file_handler.setLevel(logging.ERROR)
+                error_file_handler.setFormatter(detailed_formatter)
+                self.logger.addHandler(error_file_handler)
+            except (OSError, PermissionError) as e:
+                print(f"Warning: Could not create file handlers: {e}")
         
-        # File handler for errors only
-        error_log_file = os.path.join(self.log_dir, f"errors_{datetime.now().strftime('%Y%m%d')}.log")
-        error_file_handler = logging.FileHandler(error_log_file, encoding='utf-8')
-        error_file_handler.setLevel(logging.ERROR)
-        error_file_handler.setFormatter(detailed_formatter)
-        
-        # Console handler
+        # Console handler (always available)
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.INFO)
         console_handler.setFormatter(simple_formatter)
-        
-        # Add handlers to logger
-        self.logger.addHandler(file_handler)
-        self.logger.addHandler(error_file_handler)
         self.logger.addHandler(console_handler)
     
     def debug(self, message: str, context: Optional[dict] = None):

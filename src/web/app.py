@@ -25,35 +25,56 @@ def create_app(config_path: str = ".env") -> Flask:
     """
     app = Flask(__name__)
     
-    # Load configuration
-    config = Config(config_path)
-    
-    # Configure Flask secret key
-    app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
-    
-    # Session configuration
-    app.config['SESSION_COOKIE_SECURE'] = not config.is_debug_mode()  # True in production
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
-    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['PERMANENT_SESSION_LIFETIME'] = config.get_session_timeout() * 60  # Convert to seconds
-    
-    # Initialize database
-    db_manager = DatabaseManager(config.get_database_path())
-    db_manager.connect()
-    db_manager.initialize_database()
-    
-    # Initialize managers
-    auth_manager = AuthenticationManager(db_manager)
-    validator = InputValidator()
-    logger = AppLogger(config.get_log_directory())
-    inventory_manager = InventoryManager(db_manager, validator, logger, config)
-    
-    # Store managers in app config for access in routes
-    app.config['DB_MANAGER'] = db_manager
-    app.config['AUTH_MANAGER'] = auth_manager
-    app.config['INVENTORY_MANAGER'] = inventory_manager
-    app.config['LOGGER'] = logger
-    app.config['APP_CONFIG'] = config
+    try:
+        # Load configuration
+        config = Config(config_path)
+        
+        # Configure Flask secret key
+        app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', secrets.token_hex(32))
+        
+        # Session configuration
+        app.config['SESSION_COOKIE_SECURE'] = not config.is_debug_mode()  # True in production
+        app.config['SESSION_COOKIE_HTTPONLY'] = True
+        app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+        app.config['PERMANENT_SESSION_LIFETIME'] = config.get_session_timeout() * 60  # Convert to seconds
+        
+        # Initialize database with error handling for serverless
+        db_path = config.get_database_path()
+        print(f"Initializing database at: {db_path}")
+        db_manager = DatabaseManager(db_path)
+        
+        if not db_manager.connect():
+            raise RuntimeError(f"Failed to connect to database at {db_path}")
+        
+        if not db_manager.initialize_database():
+            raise RuntimeError("Failed to initialize database schema")
+        
+        # Initialize managers
+        auth_manager = AuthenticationManager(db_manager)
+        validator = InputValidator()
+        
+        # Initialize logger with error handling
+        log_dir = config.get_log_directory()
+        print(f"Initializing logger with directory: {log_dir}")
+        logger = AppLogger(config.get_log_directory())
+        
+        inventory_manager = InventoryManager(db_manager, validator, logger, config)
+        
+        # Store managers in app config for access in routes
+        app.config['DB_MANAGER'] = db_manager
+        app.config['AUTH_MANAGER'] = auth_manager
+        app.config['INVENTORY_MANAGER'] = inventory_manager
+        app.config['LOGGER'] = logger
+        app.config['APP_CONFIG'] = config
+        
+        print("Flask app initialization successful")
+        
+    except Exception as e:
+        print(f"CRITICAL ERROR during app initialization: {e}")
+        import traceback
+        traceback.print_exc()
+        # Re-raise to make the error visible in Vercel logs
+        raise
     
     # Register error handlers
     @app.errorhandler(404)
@@ -68,9 +89,15 @@ def create_app(config_path: str = ".env") -> Flask:
     def internal_error(error):
         """Handle 500 errors."""
         from flask import render_template
-        logger.error(f"Internal server error: {error}", exc_info=True)
-        return render_template('error.html', 
-                             error_code=500, 
+        # Safely log error if logger is available
+        if 'LOGGER' in app.config:
+            app.config['LOGGER'].error(f"Internal server error: {error}", exc_info=True)
+        else:
+            print(f"Internal server error: {error}")
+            import traceback
+            traceback.print_exc()
+        return render_template('error.html',
+                             error_code=500,
                              error_message="Internal server error"), 500
     
     # Register blueprints

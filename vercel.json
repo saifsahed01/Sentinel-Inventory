@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
+  ],
+  "env": {
+    "DATABASE_PATH": "/tmp/inventory.db",
+    "LOG_DIRECTORY": "/tmp/logs",
+    "DEBUG_MODE": "False",
+    "SESSION_TIMEOUT_MINUTES": "30",
+    "MAX_LOGIN_ATTEMPTS": "5",
+    "BCRYPT_ROUNDS": "12",
+    "MAX_PRODUCT_NAME_LENGTH": "100",
+    "MAX_USERNAME_LENGTH": "50",
+    "MIN_USERNAME_LENGTH": "3",
+    "MIN_PASSWORD_LENGTH": "8",
+    "MAX_QUANTITY": "1000000",
+    "MAX_PRICE": "1000000.00",
+    "LOW_STOCK_THRESHOLD": "5",
+    "LOG_LEVEL": "INFO",
+    "APP_NAME": "Inventory Management System",
+    "APP_VERSION": "2.0.0"
+  }
+}

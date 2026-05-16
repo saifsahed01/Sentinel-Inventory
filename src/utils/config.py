@@ -70,25 +70,40 @@ class Config:
     
     def _ensure_directories(self):
         """Create required directories if they don't exist."""
-        # Create database directory using os.path for cross-platform compatibility
-        db_dir = os.path.dirname(self.DATABASE_PATH)
-        if db_dir and not os.path.exists(db_dir):
-            os.makedirs(db_dir, exist_ok=True)
+        try:
+            # Create database directory using os.path for cross-platform compatibility
+            db_dir = os.path.dirname(self.DATABASE_PATH)
+            if db_dir and not os.path.exists(db_dir):
+                os.makedirs(db_dir, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            # In serverless environments, we may not have write permissions
+            # Log the error but don't crash - database path should be in /tmp
+            print(f"Warning: Could not create database directory: {e}")
         
-        # Create log directory - convert to absolute path if relative
-        log_dir = self.LOG_DIRECTORY
-        if not os.path.isabs(log_dir):
-            # Get the project root directory (3 levels up from this file)
-            current_file = os.path.abspath(__file__)
-            project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
-            log_dir = os.path.join(project_root, log_dir)
-        
-        log_dir = os.path.normpath(log_dir)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir, exist_ok=True)
-        
-        # Update LOG_DIRECTORY to absolute path
-        self.LOG_DIRECTORY = log_dir
+        try:
+            # Create log directory - convert to absolute path if relative
+            log_dir = self.LOG_DIRECTORY
+            if not os.path.isabs(log_dir):
+                # Get the project root directory (3 levels up from this file)
+                current_file = os.path.abspath(__file__)
+                project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+                log_dir = os.path.join(project_root, log_dir)
+            
+            log_dir = os.path.normpath(log_dir)
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir, exist_ok=True)
+            
+            # Update LOG_DIRECTORY to absolute path
+            self.LOG_DIRECTORY = log_dir
+        except (OSError, PermissionError) as e:
+            # In serverless environments, we may not have write permissions
+            # Fall back to /tmp for logs
+            print(f"Warning: Could not create log directory: {e}")
+            self.LOG_DIRECTORY = "/tmp/logs"
+            try:
+                os.makedirs(self.LOG_DIRECTORY, exist_ok=True)
+            except Exception:
+                pass  # If even /tmp fails, logging will be disabled
     
     def get_database_path(self) -> str:
         """Get the database file path."""
